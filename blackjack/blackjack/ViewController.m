@@ -49,6 +49,7 @@
         [_doubleButton setEnabled:false];
         [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
     }
+    [_doubleButton setEnabled:false];
 }
 
 - (IBAction)doubleBet:(id)sender {
@@ -77,6 +78,7 @@
 
 - (IBAction)stand:(id)sender {
     [self dealerAI];
+    [_doubleButton setEnabled:false];
 }
 
 - (IBAction)start:(id)sender {
