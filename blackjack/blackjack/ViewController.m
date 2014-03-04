@@ -22,9 +22,11 @@
 @property (weak, nonatomic) IBOutlet UIButton *hitButton;
 @property (weak, nonatomic) IBOutlet UIButton *standButton;
 @property (weak, nonatomic) IBOutlet UIButton *dealButton;
+@property (weak, nonatomic) IBOutlet UIButton *doubleButton;
 @property (weak, nonatomic) IBOutlet UILabel *moneyLabel;
 @property (weak, nonatomic) IBOutlet UILabel *betLabel;
 @property (weak, nonatomic) IBOutlet UITextField *betArea;
+
 @property int numberOfGames;
 @property int score;
 @property int currentBet;
@@ -44,8 +46,33 @@
         [_dealButton setEnabled:true];
         [_hitButton setEnabled:false];
         [_standButton setEnabled:false];
+        [_doubleButton setEnabled:false];
         [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
     }
+}
+
+- (IBAction)doubleBet:(id)sender {
+    _score = _score - _currentBet;
+    _currentBet = _currentBet * 2;
+    [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
+    [_betLabel setText:[NSString stringWithFormat:@"$ %i", _currentBet]];
+    [_thePlayer takeCard:[_theDeck drawCard]];
+    [self updateCards:_thePlayer withUICollection:_playerLabels andValueLabel:_playerValueOfCardsLabel];
+    if ([_thePlayer valueOfCardsHeld] > 21)
+    {
+        [_playerValueOfCardsLabel setText:@"BUST"];
+        [_theDealer takeCard:[_theDeck drawCard]];
+        [self updateCards:_theDealer withUICollection:_dealerLabels andValueLabel:_dealerValueOfCardsLabel];
+        [_dealButton setEnabled:true];
+        [_hitButton setEnabled:false];
+        [_standButton setEnabled:false];
+        [_doubleButton setEnabled:false];
+        [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
+    }
+    else {
+        [self stand:nil];
+    }
+    
 }
 
 - (IBAction)stand:(id)sender {
@@ -93,6 +120,14 @@
             _currentBet = 1;
         }
         
+        if (_score < (_currentBet * 2))
+        {
+            [_doubleButton setEnabled:false];
+        }
+        else
+        {
+            [_doubleButton setEnabled:true];
+        }
         [_betLabel setText:[NSString stringWithFormat:@"$ %i", _currentBet]];
         _score = _score - _currentBet;
         [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
@@ -140,6 +175,7 @@
         [_dealButton setEnabled:true];
         [_hitButton setEnabled:false];
         [_standButton setEnabled:false];
+        [_doubleButton setEnabled:false];
         int winAmount = _currentBet * 2;
         _score += winAmount;
     }
@@ -149,7 +185,7 @@
         [_dealButton setEnabled:true];
         [_hitButton setEnabled:false];
         [_standButton setEnabled:false];
-        _score = _score - _currentBet;
+        [_doubleButton setEnabled:false];
     }
     else if ([_thePlayer valueOfCardsHeld] == [_theDealer valueOfCardsHeld])
     {
@@ -157,6 +193,7 @@
         [_dealButton setEnabled:true];
         [_hitButton setEnabled:false];
         [_standButton setEnabled:false];
+        [_doubleButton setEnabled:false];
         int winAmount = _currentBet;
         _score += winAmount;
     }
@@ -166,8 +203,8 @@
         [_dealButton setEnabled:true];
         [_hitButton setEnabled:false];
         [_standButton setEnabled:false];
-        int winAmount = _currentBet * 2;
-        _score += winAmount;
+        [_doubleButton setEnabled:false];
+        _score = _currentBet * 2;
     }
     else {}
     [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
@@ -195,6 +232,17 @@
     
     [_moneyLabel setText:[NSString stringWithFormat:@"$%i", _score]];
     [_betArea setDelegate:self];
+    
+    for(UILabel *aCard in _playerLabels)
+    {
+        [aCard setBackgroundColor:nil];
+        [aCard setText:@""];
+    }
+    for(UILabel *aCard in _dealerLabels)
+    {
+        [aCard setBackgroundColor:nil];
+        [aCard setText:@""];
+    }
     
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.

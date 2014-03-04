@@ -136,7 +136,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fa8-O3-jcL">
-                                <rect key="frame" x="392" y="257" width="74" height="52"/>
+                                <rect key="frame" x="393" y="257" width="74" height="52"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Stand">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -198,6 +198,16 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jDp-6m-xBw">
+                                <rect key="frame" x="475" y="257" width="74" height="52"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Double">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="doubleBet:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="N9E-2a-lwD"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.48980011725554684" green="0.82871942934782605" blue="0.57520459639633559" alpha="1" colorSpace="calibratedRGB"/>
                         <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
@@ -208,6 +218,7 @@
                         <outlet property="betLabel" destination="Zc8-Q4-4rP" id="PV7-n5-K6J"/>
                         <outlet property="dealButton" destination="Ebu-Iz-Mxy" id="v6s-Gc-L4R"/>
                         <outlet property="dealerValueOfCardsLabel" destination="Jg0-AP-VfR" id="PkI-i9-Ifu"/>
+                        <outlet property="doubleButton" destination="jDp-6m-xBw" id="bW8-mV-H4G"/>
                         <outlet property="hitButton" destination="rRA-gy-cbh" id="wRK-Tx-imi"/>
                         <outlet property="moneyLabel" destination="MMC-Yq-Rk4" id="BrJ-Ax-fUe"/>
                         <outlet property="playerValueOfCardsLabel" destination="Afu-yw-9zb" id="gf0-Ie-1l2"/>
