@@ -35,45 +35,25 @@
 
 @implementation ViewController
 
+
 - (IBAction)hit:(id)sender {
-    [_thePlayer takeCard:[_theDeck drawCard]];
-    [self updateCards:_thePlayer withUICollection:_playerLabels andValueLabel:_playerValueOfCardsLabel];
-    if ([_thePlayer valueOfCardsHeld] > 21)
-    {
-        [_playerValueOfCardsLabel setText:@"BUST"];
-        [_theDealer takeCard:[_theDeck drawCard]];
-        [self updateCards:_theDealer withUICollection:_dealerLabels andValueLabel:_dealerValueOfCardsLabel];
-        [_dealButton setEnabled:true];
-        [_hitButton setEnabled:false];
-        [_standButton setEnabled:false];
-        [_doubleButton setEnabled:false];
-        [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
-    }
-    [_doubleButton setEnabled:false];
+    [self hitCard];
+    [self checkIfPlayerBustWhileHitting];
 }
 
 - (IBAction)doubleBet:(id)sender {
-    _score = _score - _currentBet;
-    _currentBet = _currentBet * 2;
-    [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
-    [_betLabel setText:[NSString stringWithFormat:@"$ %i", _currentBet]];
-    [_thePlayer takeCard:[_theDeck drawCard]];
-    [self updateCards:_thePlayer withUICollection:_playerLabels andValueLabel:_playerValueOfCardsLabel];
-    if ([_thePlayer valueOfCardsHeld] > 21)
+    [self hitCard];
+    [self doubleTheBet];
+    if (![self checkIfPlayerBustWhileHitting])
     {
-        [_playerValueOfCardsLabel setText:@"BUST"];
-        [_theDealer takeCard:[_theDeck drawCard]];
-        [self updateCards:_theDealer withUICollection:_dealerLabels andValueLabel:_dealerValueOfCardsLabel];
-        [_dealButton setEnabled:true];
-        [_hitButton setEnabled:false];
-        [_standButton setEnabled:false];
-        [_doubleButton setEnabled:false];
-        [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
-    }
-    else {
         [self stand:nil];
     }
-    
+}
+
+- (void) hitCard {
+    [_thePlayer takeCard:[_theDeck drawCard]];
+    [self updateCards:_thePlayer withUICollection:_playerLabels andValueLabel:_playerValueOfCardsLabel];
+    [_doubleButton setEnabled:false];
 }
 
 - (IBAction)stand:(id)sender {
@@ -92,7 +72,6 @@
     {
         if (_numberOfGames > 4 || _numberOfGames == 0)
         {
-            NSLog(@"%i", _numberOfGames);
             [_theDeck makeDeck];
             [_theDeck shuffle];
             [_theDeck displayDeck];
@@ -106,35 +85,79 @@
         [_dealButton setEnabled:false];
         [_hitButton setEnabled:true];
         [_standButton setEnabled:true];
+        [self makeBet];
         [self clearAll];
         [self updateCards:_thePlayer withUICollection:_playerLabels andValueLabel:_playerValueOfCardsLabel];
         [self updateCards:_theDealer withUICollection:_dealerLabels andValueLabel:_dealerValueOfCardsLabel];
         _numberOfGames++;
-        
-        _currentBet = [[_betArea text] intValue];
-        
-        if (_currentBet > _score)
-        {
-            _currentBet = _score;
-        }
-        else if (_currentBet == 0)
-        {
-            _currentBet = 1;
-        }
-        
-        if (_score < (_currentBet * 2))
-        {
-            [_doubleButton setEnabled:false];
-        }
-        else
-        {
-            [_doubleButton setEnabled:true];
-        }
-        [_betLabel setText:[NSString stringWithFormat:@"$ %i", _currentBet]];
-        _score = _score - _currentBet;
-        [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
     }
 }
+
+-(void)updateCards:(Player *)player withUICollection:(NSArray *)withUICards andValueLabel:(UILabel *)valueLabel{
+    for(UILabel *aCard in withUICards)
+    {
+        if ([aCard tag] < [player numberOfCards])
+        {
+            Card *theCard = player.cards[[aCard tag]];
+            [aCard setText:[theCard displayCard]];
+            UIColor * lightBlueColor = [UIColor colorWithRed:197/255.0f green:232/255.0f blue:255/255.0f alpha:1.0f];
+            [aCard setBackgroundColor:lightBlueColor];
+        }
+    }
+    NSString *cardLabel = [NSString stringWithFormat:@"%i",[player valueOfCardsHeld]];
+    [valueLabel setText:cardLabel];
+}
+
+-(BOOL) checkIfPlayerBustWhileHitting {
+    if ([_thePlayer valueOfCardsHeld] > 21)
+    {
+        [_playerValueOfCardsLabel setText:@"BUST"];
+        [_theDealer takeCard:[_theDeck drawCard]];
+        [self updateCards:_theDealer withUICollection:_dealerLabels andValueLabel:_dealerValueOfCardsLabel];
+        [self gameFinishUI];
+        [self loseScore];
+        return YES;
+    }
+    else
+    {
+        return NO;
+    }
+}
+
+-(void)checkWin {
+    if ([_thePlayer valueOfCardsHeld] > [_theDealer valueOfCardsHeld])
+    {
+        [_playerValueOfCardsLabel setText:@"WIN"];
+        [self winScore];
+    }
+    else if ([_thePlayer valueOfCardsHeld] < [_theDealer valueOfCardsHeld] && [_theDealer valueOfCardsHeld] < 22)
+    {
+        [_playerValueOfCardsLabel setText:@"LOSE"];
+        [self loseScore];
+    }
+    else if ([_thePlayer valueOfCardsHeld] == [_theDealer valueOfCardsHeld])
+    {
+        [_playerValueOfCardsLabel setText:@"PUSH"];
+        [self pushScore];
+    }
+    else if([_theDealer valueOfCardsHeld] > 21)
+    {
+        [_playerValueOfCardsLabel setText:@"WIN"];
+        [self winScore];
+    }
+    [self gameFinishUI];
+}
+
+- (void)dealerAI {
+    while ([_theDealer valueOfCardsHeld] < 17)
+    {
+        [_theDealer takeCard:[_theDeck drawCard]];
+        [self updateCards:_theDealer withUICollection:_dealerLabels andValueLabel:_dealerValueOfCardsLabel];
+    }
+    [self checkWin];
+}
+
+// UI Cleanup Functions
 
 -(void)clearAll {
     for(UILabel *aCard in _playerLabels)
@@ -155,76 +178,67 @@
     }
 }
 
--(void)updateCards:(Player *)player withUICollection:(NSArray *)withUICards andValueLabel:(UILabel *)valueLabel{
-    for(UILabel *aCard in withUICards)
-    {
-        if ([aCard tag] < [player numberOfCards])
-        {
-            Card *theCard = player.cards[[aCard tag]];
-            [aCard setText:[theCard displayCard]];
-            UIColor * lightBlueColor = [UIColor colorWithRed:197/255.0f green:232/255.0f blue:255/255.0f alpha:1.0f];
-            [aCard setBackgroundColor:lightBlueColor];
-        }
-    }
-    NSString *cardLabel = [NSString stringWithFormat:@"%i",[player valueOfCardsHeld]];
-    [valueLabel setText:cardLabel];
+-(void)gameFinishUI {
+    [_dealButton setEnabled:true];
+    [_hitButton setEnabled:false];
+    [_standButton setEnabled:false];
+    [_doubleButton setEnabled:false];
 }
 
--(void)checkWin {
-    if ([_thePlayer valueOfCardsHeld] > [_theDealer valueOfCardsHeld])
+// Money Related Functions
+
+-(void) makeBet {
+    _currentBet = [[_betArea text] intValue];
+    if (_currentBet > _score)
     {
-        [_playerValueOfCardsLabel setText:@"WIN"];
-        [_dealButton setEnabled:true];
-        [_hitButton setEnabled:false];
-        [_standButton setEnabled:false];
-        [_doubleButton setEnabled:false];
-        int winAmount = _currentBet * 2;
-        _score += winAmount;
+        _currentBet = _score;
     }
-    else if ([_thePlayer valueOfCardsHeld] < [_theDealer valueOfCardsHeld] && [_theDealer valueOfCardsHeld] < 22)
+    else if (_currentBet == 0)
     {
-        [_playerValueOfCardsLabel setText:@"LOSE"];
-        [_dealButton setEnabled:true];
-        [_hitButton setEnabled:false];
-        [_standButton setEnabled:false];
-        [_doubleButton setEnabled:false];
+        _currentBet = 1;
     }
-    else if ([_thePlayer valueOfCardsHeld] == [_theDealer valueOfCardsHeld])
+    _score = _score - _currentBet;
+    [self allowDoubleAction];
+    [self updateMoneyLabels];
+}
+
+-(void) allowDoubleAction {
+    if (_score >= _currentBet)
     {
-        [_playerValueOfCardsLabel setText:@"PUSH"];
-        [_dealButton setEnabled:true];
-        [_hitButton setEnabled:false];
-        [_standButton setEnabled:false];
-        [_doubleButton setEnabled:false];
-        int winAmount = _currentBet;
-        _score += winAmount;
+        [_doubleButton setEnabled:true];
     }
-    else if([_theDealer valueOfCardsHeld] > 21)
+    else
     {
-        [_playerValueOfCardsLabel setText:@"WIN"];
-        [_dealButton setEnabled:true];
-        [_hitButton setEnabled:false];
-        [_standButton setEnabled:false];
         [_doubleButton setEnabled:false];
-        _score = _currentBet * 2;
     }
-    else {}
+}
+
+-(void) doubleTheBet {
+    _score = _score - _currentBet;
+    _currentBet = (_currentBet * 2);
+    [self updateMoneyLabels];
+}
+
+-(void) winScore {
+    _score = _score + (_currentBet * 2);
+    [self updateMoneyLabels];
+}
+
+-(void) loseScore {
+    [self updateMoneyLabels];
+}
+
+-(void) pushScore {
+    _score = _score + _currentBet;
+    [self updateMoneyLabels];
+}
+
+-(void) updateMoneyLabels {
+    [_betLabel setText:[NSString stringWithFormat:@"$ %i", _currentBet]];
     [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
-    if (_score < 0)
-    {
-        _score = 0;
-        [_moneyLabel setText:[NSString stringWithFormat:@"$ %i", _score]];
-    }
 }
 
-- (void)dealerAI {
-    while ([_theDealer valueOfCardsHeld] < 17)
-    {
-        [_theDealer takeCard:[_theDeck drawCard]];
-        [self updateCards:_theDealer withUICollection:_dealerLabels andValueLabel:_dealerValueOfCardsLabel];
-    }
-    [self checkWin];
-}
+// Automatic Code below
 
 - (void)viewDidLoad
 {
